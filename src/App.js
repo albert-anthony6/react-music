@@ -36,6 +36,8 @@ const [libraryStatus, setLibraryStatus] = useState(false);
         setIsPlaying={setIsPlaying}
         isPlaying={isPlaying}
         currentSong={currentSong}
+        setCurrentSong={setCurrentSong}
+        songs={songs}
       />
       <Library
         isPlaying={isPlaying}
