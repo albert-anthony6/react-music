@@ -1,16 +1,21 @@
-import React, { useEffect } from 'react';
+import React, { useState } from 'react';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import {
     faPlay,
     faAngleLeft,
     faAngleRight,
     faPause,
+    faVolumeMute,
+    faVolumeUp
 } from '@fortawesome/free-solid-svg-icons';
 
 const Player = ({ currentSong, setCurrentSong, songs, setSongs, isPlaying, setIsPlaying, audioRef, songInfo, setSongInfo }) => {
-    useEffect(() => {
+    // State
+    const [isMuted, setIsMuted] = useState(false);
+
+    const activeLibraryHandler = (nextPrev) => {
         const newSongs = songs.map((song) => {
-            if (song.id === currentSong.id) {
+            if (song.id === nextPrev.id) {
                 return {
                     ...song,
                     active: true,
@@ -23,7 +28,7 @@ const Player = ({ currentSong, setCurrentSong, songs, setSongs, isPlaying, setIs
             }
         });
         setSongs(newSongs);
-    }, [currentSong]);
+    };
     // Event Handlers
     const playSongHandler = () => {
         if (isPlaying) {
@@ -48,16 +53,28 @@ const Player = ({ currentSong, setCurrentSong, songs, setSongs, isPlaying, setIs
         let currentIndex = songs.findIndex((song) => song.id === currentSong.id);
         if (direction === 'skip-forward') {
             await setCurrentSong(songs[(currentIndex + 1) % songs.length]);
+            activeLibraryHandler(songs[(currentIndex + 1) % songs.length]);
         } 
         if (direction === 'skip-back') {
             if ((currentIndex - 1) % songs.length === -1) {
                 await setCurrentSong(songs[songs.length - 1]);
+                activeLibraryHandler(songs[songs.length - 1]);
                 if (isPlaying) audioRef.current.play();
                 return;
             }
             await setCurrentSong(songs[(currentIndex - 1) % songs.length]);
+            activeLibraryHandler(songs[(currentIndex - 1) % songs.length]);
         }
         if (isPlaying) audioRef.current.play();
+    };
+    const muteHandler = (mute) => {
+        if (mute === 'mute') {
+            audioRef.current.muted = true;
+            setIsMuted(true);
+        } else if (mute === 'unmute') {
+            audioRef.current.muted = false;
+            setIsMuted(false);
+        }
     };
     //Add the styles
     const trackAnim = {
@@ -84,6 +101,12 @@ const Player = ({ currentSong, setCurrentSong, songs, setSongs, isPlaying, setIs
                 <FontAwesomeIcon onClick={() => skipTrackHandler('skip-back')} className="skip-back" size="2x" icon={faAngleLeft} />
                 <FontAwesomeIcon onClick={playSongHandler} className="play" size="2x" icon={isPlaying ? faPause : faPlay} />
                 <FontAwesomeIcon onClick={() => skipTrackHandler('skip-forward')}  className="skip-forward" size="2x" icon={faAngleRight} />
+                {
+                    isMuted ?
+                    <FontAwesomeIcon onClick={() => muteHandler('unmute')} size="2x" icon={faVolumeMute} />
+                    :
+                    <FontAwesomeIcon onClick={() => muteHandler('mute')} size="2x" icon={faVolumeUp} />
+                }
             </div>
         </div>
     );
